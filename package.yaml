@@ -1,0 +1,29 @@
+name:                fantasypie
+version:             0.1.0.0
+
+extra-source-files:
+- README.md
+
+dependencies:
+- base >= 4.7 && < 5
+- containers
+- trifecta
+- HUnit
+- prettyprinter
+
+library:
+        source-dirs: src
+
+executables:
+        pie:
+                main: Main.hs
+                source-dirs: app/
+                dependencies:
+                        - fantasypie
+tests:
+  pie-test:
+    main:                test.hs
+    source-dirs:         test
+    dependencies:
+        - HUnit
+        - fantasypie
