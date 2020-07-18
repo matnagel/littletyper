@@ -10,9 +10,12 @@ import Types
 
 import ParseExpression
 
-instance IsString Expression where
+instance (Parseable a) => IsString (Expression a) where
     fromString str = case parseToExpression str of
         Right exp -> exp
+
+instance (IsString Atom) where
+    fromString = MkAtom
 
 runList :: [Test] -> IO ()
 runList [] = return ()
@@ -26,19 +29,21 @@ main::IO()
 main = do
     runList [
          parseExpressionTest,
-         parseCorrectTest
+         parseCorrectTest,
+         isTypeTest
         ]
     return ()
+
 
 createParsableTest :: String -> String -> Test
 createParsableTest desc input = TestCase (assertBool
     ("Does not parse: " ++ desc ++ " - Input: " ++ show input)
-    (isRight $ parseToExpression input))
+    (isRight $ (parseToExpression input :: Either ErrInfo (Expression Atom))))
 
 createParsableFailTest :: String -> String -> Test
 createParsableFailTest desc input = TestCase (assertBool
     ("Parse should fail: " ++ desc ++ " - Input: " ++ show input)
-    (isLeft $ parseToExpression input))
+    (isLeft $ (parseToExpression input :: Either ErrInfo (Expression Atom))))
 
 parseExpressionTest = TestLabel "Parse Expressions" $ TestList [
      cTest "atom" "'bla;"
@@ -54,8 +59,8 @@ parseExpressionTest = TestLabel "Parse Expressions" $ TestList [
     where cTest = createParsableTest
           cFailTest = createParsableFailTest
 
-createCorrectTest :: String -> Expression -> String -> Test
-createCorrectTest desc exp input = TestCase (assertEqual
+createVerifyParseTest :: String -> Expression Atom -> String -> Test
+createVerifyParseTest desc exp input = TestCase (assertEqual
     desc exp $ fromString input)
 
 parseCorrectTest = TestLabel "Parses correct results" $ TestList [
@@ -63,4 +68,17 @@ parseCorrectTest = TestLabel "Parses correct results" $ TestList [
     cTest "Atom" (CAtom "x") "'x;",
     cTest "Multiapplication" (EApplication (EVar "x") (EApplication (EVar "y") (EVar "z"))) "x y z;"
     ]
-    where cTest = createCorrectTest
+    where cTest = createVerifyParseTest
+
+
+createIsTypeTest :: String -> Expression Atom -> Type -> Test
+createIsTypeTest desc exp typ = TestCase (assertBool
+    ("isType" ++ desc ++ " - Input: " ++ show exp ++ " : " ++ show typ)
+    (isType exp typ))
+
+isTypeTest = TestLabel "Parses correct results" $ TestList [
+    cTest "Atom" (CAtom "x") Atom,
+    cTest "Variable" (EVar "x") (TypeOfVariable "x")
+    ]
+    where cTest = createIsTypeTest
+

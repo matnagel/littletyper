@@ -1,5 +1,8 @@
 module ParseExpression (
-    parseToExpression
+    parseToExpression,
+    Parseable,
+    ErrInfo,
+    isType
     )
     where
 
@@ -12,11 +15,17 @@ import Types
 
 import Text.Trifecta
 
+class Parseable a where
+    stdParser :: Parser a
+
+instance Parseable Atom where
+    stdParser = MkAtom <$> (char '\'' >> (some letter))
+
 tokenize :: Parser a -> Parser a
 tokenize p = p <* whiteSpace
 
-pAtom :: Parser Expression
-pAtom = char '\'' >> CAtom <$> some letter
+pAtom :: Parseable a => Parser (Expression a)
+pAtom = CAtom <$> stdParser
 
 pIdentifier :: Parser String
 pIdentifier = do
@@ -24,10 +33,10 @@ pIdentifier = do
     guard (string /= "lambda")
     return string
 
-pVariable :: Parser Expression
+pVariable :: Parser (Expression a)
 pVariable = EVar <$> pIdentifier
 
-pLambda :: Parser Expression
+pLambda :: Parseable a => Parser (Expression a)
 pLambda =  intro >> do
     variables <- parens (some $ tokenize $ pIdentifier)
     expr <- braces $ pExpression
@@ -38,15 +47,20 @@ pLambda =  intro >> do
 asum :: [Parser a] -> Parser a
 asum ps = foldr (<|>) empty ps
 
-pSimpleExpression :: Parser Expression
+pSimpleExpression :: Parseable a => Parser (Expression a)
 pSimpleExpression = tokenize $ asum ps
-    where ps = [pAtom, pLambda, pVariable]
+    where ps = [pLambda, pAtom, pVariable]
 
-pExpression :: Parser Expression
+pExpression :: Parseable a => Parser (Expression a)
 pExpression = parens pExpression <|> foldr1 applyApplication <$> some pSimpleExpression
     where applyApplication x y = EApplication x y
 
-parseToExpression :: String -> Either ErrInfo Expression
+parseToExpression :: Parseable a => String -> Either ErrInfo (Expression a)
 parseToExpression str = case parseString (pExpression <* symbolic ';') mempty str of
     Success x -> Right x
     Failure err -> Left err
+
+isType :: Expression Atom -> Type -> Bool
+isType (CAtom _) Atom = True
+isType (EVar "x") (TypeOfVariable "x") = True
+isType _ _ = False
