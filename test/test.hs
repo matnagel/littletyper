@@ -9,6 +9,7 @@ import Data.String
 import Types
 
 import ParseExpression
+import TypeChecking
 
 instance (Parseable a) => IsString (Expression a) where
     fromString str = case parseToExpression str of
@@ -76,9 +77,19 @@ createIsTypeTest desc exp typ = TestCase (assertBool
     ("isType" ++ desc ++ " - Input: " ++ show exp ++ " : " ++ show typ)
     (isType exp typ))
 
+createIsTypeFailTest :: String -> Expression Atom -> Type -> Test
+createIsTypeFailTest desc exp typ = TestCase (assertBool
+    ("isType should fail - " ++ desc ++ ": " ++ show exp ++ " : " ++ show typ)
+    (not $ isType exp typ))
+
+
 isTypeTest = TestLabel "Parses correct results" $ TestList [
     cTest "Atom" (CAtom "x") Atom,
-    cTest "Variable" (EVar "x") (TypeOfVariable "x")
+    cFailTest "Variable" (EVar "x") Atom,
+    cTest "Lambda" "λ(x){'tock};" (Arrow Atom Atom),
+    cFailTest "Lambda" "λ(x y){'tock};" (Arrow Atom Atom),
+    cTest "Identity Lambda" "λ(x){x};" (Arrow Atom Atom)
     ]
     where cTest = createIsTypeTest
+          cFailTest = createIsTypeFailTest
 

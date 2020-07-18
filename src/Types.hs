@@ -18,4 +18,4 @@ data Expression a = CAtom a
 --              | Athe Expression (Type a)
                  deriving (Eq, Show)
 
-data Type = Atom | Arrow Type Type | TypeOfVariable String deriving Show
+data Type = Atom | Arrow Type Type | TypeOfVariable String deriving (Eq, Show)

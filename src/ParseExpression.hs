@@ -1,8 +1,7 @@
 module ParseExpression (
     parseToExpression,
     Parseable,
-    ErrInfo,
-    isType
+    ErrInfo
     )
     where
 
@@ -59,8 +58,3 @@ parseToExpression :: Parseable a => String -> Either ErrInfo (Expression a)
 parseToExpression str = case parseString (pExpression <* symbolic ';') mempty str of
     Success x -> Right x
     Failure err -> Left err
-
-isType :: Expression Atom -> Type -> Bool
-isType (CAtom _) Atom = True
-isType (EVar "x") (TypeOfVariable "x") = True
-isType _ _ = False
