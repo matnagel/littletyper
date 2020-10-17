@@ -1,4 +1,4 @@
-{-# LANGUAGE MultiParamTypeClasses #-}
+-- {-# LANGUAGE MultiParamTypeClasses #-}
 
 module Types (
     Expression (..),
@@ -11,11 +11,11 @@ import Data.Map.Strict as Map
 
 newtype Atom = MkAtom String deriving (Eq, Show)
 
-data Expression a = CAtom a
-                | CLambda String (Expression a)
+data Expression = CAtom Atom
+                | CLambda String Expression
                 | EVar String
-                | EApplication (Expression a) (Expression a)
---              | Athe Expression (Type a)
+                | EApplication Expression Expression
+                | Athe Expression Type
                  deriving (Eq, Show)
 
-data Type = Atom | Arrow Type Type | TypeOfVariable String deriving (Eq, Show)
+data Type = Atom | Arrow Type Type deriving (Eq, Show)

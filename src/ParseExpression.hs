@@ -1,6 +1,5 @@
 module ParseExpression (
     parseToExpression,
-    Parseable,
     ErrInfo
     )
     where
@@ -14,28 +13,24 @@ import Types
 
 import Text.Trifecta
 
-class Parseable a where
-    stdParser :: Parser a
-
-instance Parseable Atom where
-    stdParser = MkAtom <$> (char '\'' >> (some letter))
+protectedKeywords = ["lambda"]
 
 tokenize :: Parser a -> Parser a
 tokenize p = p <* whiteSpace
 
-pAtom :: Parseable a => Parser (Expression a)
-pAtom = CAtom <$> stdParser
+pAtom :: Parser Expression
+pAtom = CAtom <$> MkAtom <$> (char '\'' >> (some letter))
 
 pIdentifier :: Parser String
 pIdentifier = do
     string <- ((:) <$> letter <*> many alphaNum)
-    guard (string /= "lambda")
+    guard $ not $ elem string protectedKeywords
     return string
 
-pVariable :: Parser (Expression a)
+pVariable :: Parser Expression
 pVariable = EVar <$> pIdentifier
 
-pLambda :: Parseable a => Parser (Expression a)
+pLambda :: Parser Expression
 pLambda =  intro >> do
     variables <- parens (some $ tokenize $ pIdentifier)
     expr <- braces $ pExpression
@@ -46,15 +41,38 @@ pLambda =  intro >> do
 asum :: [Parser a] -> Parser a
 asum ps = foldr (<|>) empty ps
 
-pSimpleExpression :: Parseable a => Parser (Expression a)
+pSimpleExpression :: Parser Expression
 pSimpleExpression = tokenize $ asum ps
     where ps = [pLambda, pAtom, pVariable]
 
-pExpression :: Parseable a => Parser (Expression a)
-pExpression = parens pExpression <|> foldr1 applyApplication <$> some pSimpleExpression
+pType :: Parser Type
+pType = parens pType <|> do
+    typ <- (symbol "Atom" >> return Atom)
+    f <- optional $ (symbol "->") >> pType
+    case f of
+        Nothing -> return typ
+        Just range -> return $ Arrow typ range
+
+theAnnotated :: Parser Expression -> Parser Expression
+theAnnotated p = do
+    exp <- p
+    annotation <- optional (symbolic ':' >> pType)
+    case annotation of
+        Nothing -> return exp
+        Just typ -> return $ Athe exp typ
+
+pExpression :: Parser Expression
+pExpression = theAnnotated $ foldr1 applyApplication
+        <$> some (pSimpleExpression <|> parens pExpression)
     where applyApplication x y = EApplication x y
 
-parseToExpression :: Parseable a => String -> Either ErrInfo (Expression a)
+parseToExpression :: String -> Either ErrInfo Expression
 parseToExpression str = case parseString (pExpression <* symbolic ';') mempty str of
     Success x -> Right x
     Failure err -> Left err
+
+parsePlay :: String -> Either ErrInfo Expression
+parsePlay str = case parseString (pExpression <* symbolic ';') mempty str of
+    Success x -> Right x
+    Failure err -> Left err
+

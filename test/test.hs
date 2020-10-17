@@ -6,14 +6,17 @@ import Test.HUnit
 import Data.Either (isLeft, isRight)
 import Data.String
 
+import Data.Map
+
 import Types
 
 import ParseExpression
 import TypeChecking
 
-instance (Parseable a) => IsString (Expression a) where
+instance IsString Expression where
     fromString str = case parseToExpression str of
         Right exp -> exp
+        Left str -> error $ "Static expression does not parse: " ++ show str
 
 instance (IsString Atom) where
     fromString = MkAtom
@@ -31,6 +34,7 @@ main = do
     runList [
          parseExpressionTest,
          parseCorrectTest,
+         inferTypeTest,
          isTypeTest
         ]
     return ()
@@ -39,28 +43,34 @@ main = do
 createParsableTest :: String -> String -> Test
 createParsableTest desc input = TestCase (assertBool
     ("Does not parse: " ++ desc ++ " - Input: " ++ show input)
-    (isRight $ (parseToExpression input :: Either ErrInfo (Expression Atom))))
+    (isRight $ (parseToExpression input :: Either ErrInfo Expression)))
 
 createParsableFailTest :: String -> String -> Test
 createParsableFailTest desc input = TestCase (assertBool
     ("Parse should fail: " ++ desc ++ " - Input: " ++ show input)
-    (isLeft $ (parseToExpression input :: Either ErrInfo (Expression Atom))))
+    (isLeft $ (parseToExpression input :: Either ErrInfo Expression)))
 
 parseExpressionTest = TestLabel "Parse Expressions" $ TestList [
      cTest "atom" "'bla;"
     ,cFailTest "dash in atom" "'bl-a;"
     ,cFailTest "variables should not start with a number" "2abc;"
+    ,cFailTest "variables are not allowed to be protected keywords" "lambda;"
     ,cTest "ignore whitespaces" "'bla\t\n;"
     ,cTest "ignore useless parens" "('bla);"
     ,cTest "ignore useless parens with spaces" "( 'bla);"
     ,cTest "A Variable" "(thisisavaria2ble);"
     ,cTest "An application" "bla blip;"
     ,cTest "A lambda" "λ (a b) {'bla};"
+    ,cTest "Brackets expression" "λ (a) {a} (λ(x) {x} 'tock);"
+    ,cTest "Annotation" "'tock:Atom;"
+    ,cTest "Annotation brackets" "'tock:(Atom);"
+    ,cTest "Annotation brackets with arrow" "'tock:(Atom->Atom);"
+    ,cTest "Annotation arrow" "'tock:Atom->Atom;"
         ]
     where cTest = createParsableTest
           cFailTest = createParsableFailTest
 
-createVerifyParseTest :: String -> Expression Atom -> String -> Test
+createVerifyParseTest :: String -> Expression -> String -> Test
 createVerifyParseTest desc exp input = TestCase (assertEqual
     desc exp $ fromString input)
 
@@ -72,23 +82,43 @@ parseCorrectTest = TestLabel "Parses correct results" $ TestList [
     where cTest = createVerifyParseTest
 
 
-createIsTypeTest :: String -> Expression Atom -> Type -> Test
+context :: Map String Type
+context = fromList [("x", Atom)]
+
+createInferTypeTest :: String -> Expression -> Maybe Type -> Test
+createInferTypeTest desc exp typ = TestCase (assertEqual
+    ("isType" ++ desc ++ " - Input: " ++ show exp ++ " : " ++ show typ)
+    typ
+    (inferTypeWithContext context exp))
+
+inferTypeTest = TestLabel "inferType" $ TestList [
+    cTest "Atom" "'tock;" (Just Atom),
+    cTest "Lambda" "λ(x){'tock};" Nothing,
+    cTest "Variable" "x;" (Just Atom),
+    cTest "Variable" "y;" Nothing,
+    cTest "Lambda" "λ(x){x} : Atom -> Atom;" $ Just (Arrow Atom Atom)
+    ]
+    where cTest = createInferTypeTest
+
+
+createIsTypeTest :: String -> Expression -> Type -> Test
 createIsTypeTest desc exp typ = TestCase (assertBool
     ("isType" ++ desc ++ " - Input: " ++ show exp ++ " : " ++ show typ)
     (isType exp typ))
 
-createIsTypeFailTest :: String -> Expression Atom -> Type -> Test
+createIsTypeFailTest :: String -> Expression -> Type -> Test
 createIsTypeFailTest desc exp typ = TestCase (assertBool
     ("isType should fail - " ++ desc ++ ": " ++ show exp ++ " : " ++ show typ)
     (not $ isType exp typ))
 
 
-isTypeTest = TestLabel "Parses correct results" $ TestList [
+isTypeTest = TestLabel "isType" $ TestList [
     cTest "Atom" (CAtom "x") Atom,
     cFailTest "Variable" (EVar "x") Atom,
     cTest "Lambda" "λ(x){'tock};" (Arrow Atom Atom),
     cFailTest "Lambda" "λ(x y){'tock};" (Arrow Atom Atom),
-    cTest "Identity Lambda" "λ(x){x};" (Arrow Atom Atom)
+    cTest "Identity Lambda" "λ(x){x};" (Arrow Atom Atom),
+    cTest "Lambda application" "λ(x){x} 'tock;" Atom
     ]
     where cTest = createIsTypeTest
           cFailTest = createIsTypeFailTest
