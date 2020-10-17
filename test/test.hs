@@ -114,6 +114,8 @@ createIsTypeFailTest desc exp typ = TestCase (assertBool
 
 isTypeTest = TestLabel "isType" $ TestList [
     cTest "Atom" (CAtom "x") Atom,
+    cTest "Atom" "'atom:Atom;" Atom,
+    cFailTest "Atom" "'atom:Atom->Atom;" Atom,
     cFailTest "Variable" (EVar "x") Atom,
     cTest "Lambda" "λ(x){'tock};" (Arrow Atom Atom),
     cFailTest "Lambda" "λ(x y){'tock};" (Arrow Atom Atom),

@@ -34,5 +34,6 @@ isTypeWithContext context (CLambda varname exp) (Arrow ta tb) = isTypeWithContex
 isTypeWithContext context (EApplication fun arg) typ = case inferTypeWithContext context arg of
     Nothing -> False
     Just atyp -> (isTypeWithContext context arg atyp) && (isTypeWithContext context fun (Arrow atyp typ))
+isTypeWithContext context (Athe exp atyp) typ = (atyp == typ) && isTypeWithContext context exp typ
 isTypeWithContext _ _ _ = False
 
