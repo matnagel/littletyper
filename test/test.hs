@@ -12,6 +12,7 @@ import Types
 
 import ParseExpression
 import TypeChecking
+import Evaluation
 
 import qualified Data.Map.Strict as Map
 
@@ -38,7 +39,8 @@ main = do
          parseCorrectTest,
          inferTypeTest,
          isTypeTest,
-         isTypeWithContextTest
+         isTypeWithContextTest,
+         evalTest
         ]
     return ()
 
@@ -128,7 +130,7 @@ isTypeTest = TestLabel "isType" $ TestList [
     where cTest = createIsTypeTest
           cFailTest = createIsTypeFailTest
 
-createIsTypeWithContextTest :: String -> Context -> Expression -> Type -> Test
+createIsTypeWithContextTest :: String -> VariableTypeContext -> Expression -> Type -> Test
 createIsTypeWithContextTest desc cont exp typ = TestCase (assertBool
     ("isType" ++ desc ++ " - Input: " ++ show exp ++ " : " ++ show typ)
     (isTypeWithContext cont exp typ))
@@ -143,3 +145,14 @@ isTypeWithContextTest = TestLabel "isType with context" $ TestList [
     cTest "Interated lambda applications" "λ(x){a} (λ(x){a} b : Atom);" Atom
     ]
     where cTest desc = createIsTypeWithContextTest desc testContext
+
+createEvalTest :: String -> Expression -> Expression -> Test
+createEvalTest desc exp result = TestCase (assertBool
+    ("isType" ++ desc ++ " - Input: " ++ show exp ++ " computes to " ++ show result)
+    (eval exp == Just result))
+
+evalTest = TestLabel "evaluation Test" $ TestList [
+    cTest "Atom are final" "'tock;" "'tock;",
+    cTest "Evaluate lambda" "λ(x){x} 'tock;" "'tock;"
+    ]
+    where cTest desc = createEvalTest desc

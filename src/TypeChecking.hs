@@ -1,7 +1,7 @@
 module TypeChecking (
     isType,
     inferTypeWithContext,
-    Context,
+    VariableTypeContext,
     isTypeWithContext
     )
     where
@@ -15,9 +15,9 @@ import Types
 
 import Text.Trifecta
 
-type Context = Map.Map String Type
+type VariableTypeContext = Map.Map String Type
 
-inferTypeWithContext :: Context -> Expression -> Maybe Type
+inferTypeWithContext :: VariableTypeContext -> Expression -> Maybe Type
 inferTypeWithContext context (CAtom str) = Just Atom
 inferTypeWithContext context (EVar varname) = Map.lookup varname context
 inferTypeWithContext _ (Athe _ typ) = Just typ
@@ -26,9 +26,9 @@ inferTypeWithContext _ _ = Nothing
 isType :: Expression -> Type -> Bool
 isType = isTypeWithContext mempty
 
-isTypeWithContext :: Context -> Expression -> Type -> Bool
+isTypeWithContext :: VariableTypeContext -> Expression -> Type -> Bool
 isTypeWithContext _ (CAtom _) Atom = True
-isTypeWithContext context var@(EVar _) typ  = case inferTypeWithContext context var of
+isTypeWithContext context (EVar varname) typ  = case Map.lookup varname context of
     Nothing -> False
     Just ityp -> (ityp == typ)
 isTypeWithContext context (CLambda varname exp) (Arrow ta tb) = isTypeWithContext newcontext exp tb
@@ -37,6 +37,6 @@ isTypeWithContext context (EApplication fun arg) typ = case inferTypeWithContext
     Nothing -> False
     Just atyp -> (isTypeWithContext context arg atyp)
                         && (isTypeWithContext context fun (Arrow atyp typ))
-isTypeWithContext context (Athe exp atyp) typ = (atyp == typ) && isTypeWithContext context exp typ
+isTypeWithContext context (Athe exp atyp) typ = (atyp == typ)
+                        && isTypeWithContext context exp typ
 isTypeWithContext _ _ _ = False
-
