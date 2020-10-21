@@ -153,6 +153,7 @@ createEvalTest desc exp result = TestCase (assertBool
 
 evalTest = TestLabel "evaluation Test" $ TestList [
     cTest "Atom are final" "'tock;" "'tock;",
-    cTest "Evaluate lambda" "λ(x){x} 'tock;" "'tock;"
+    cTest "Evaluate lambda" "λ(x){x} 'tock;" "'tock;",
+    cTest "Evaluate lambda" "λ(x){x} λ(x){x} 'tock;" "'tock;"
     ]
     where cTest desc = createEvalTest desc
