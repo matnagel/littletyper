@@ -30,13 +30,13 @@ pIdentifier = do
 pVariable :: Parser Expression
 pVariable = EVar <$> pIdentifier
 
+lambdaEntry = (symbolic 'λ' >> return ()) <|> (symbol "lambda" >> return ())
+
 pLambda :: Parser Expression
-pLambda =  intro >> do
+pLambda =  lambdaEntry >> do
     variables <- parens (some $ tokenize $ pIdentifier)
-    expr <- braces $ pExpression
-    return $ foldr applyLambda expr variables
-    where applyLambda x y = CLambda x y
-          intro = (symbolic 'λ' >> return ()) <|> (symbol "lambda" >> return ())
+    expr <- braces $ pCompositeExpression
+    return $ foldr CLambda expr variables
 
 asum :: [Parser a] -> Parser a
 asum ps = foldr (<|>) empty ps
@@ -61,18 +61,11 @@ theAnnotated p = do
         Nothing -> return exp
         Just typ -> return $ Athe exp typ
 
-pExpression :: Parser Expression
-pExpression = theAnnotated $ foldr1 applyApplication
-        <$> some (pSimpleExpression <|> parens pExpression)
-    where applyApplication x y = EApplication x y
+pCompositeExpression :: Parser Expression
+pCompositeExpression = theAnnotated $ foldr1 EApplication
+        <$> some (pSimpleExpression <|> parens pCompositeExpression)
 
 parseToExpression :: String -> Either ErrInfo Expression
-parseToExpression str = case parseString (pExpression <* symbolic ';') mempty str of
+parseToExpression str = case parseString (pCompositeExpression <* symbolic ';') mempty str of
     Success x -> Right x
     Failure err -> Left err
-
-parsePlay :: String -> Either ErrInfo Expression
-parsePlay str = case parseString (pExpression <* symbolic ';') mempty str of
-    Success x -> Right x
-    Failure err -> Left err
-
