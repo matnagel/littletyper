@@ -5,4 +5,4 @@ WORKDIR repository
 COPY stack.yaml package.yaml /repository/
 RUN mkdir app src test && stack build --only-dependencies
 COPY . /repository
-ENTRYPOINT stack test
+RUN stack test
