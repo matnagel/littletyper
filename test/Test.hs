@@ -1,8 +1,10 @@
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE ScopedTypeVariables #-}
 
-module Main where
+module Test where
 
-import Test.HUnit
+import Test.Tasty
+import Test.Tasty.HUnit
 import Data.Either (isLeft, isRight)
 import Data.String
 
@@ -24,38 +26,18 @@ instance IsString Expression where
 instance (IsString Atom) where
     fromString = MkAtom
 
-runList :: [Test] -> IO ()
-runList [] = return ()
-runList (t:ts) = do
-    stats <- runTestTT t
-    if errors stats + failures stats > 0
-        then return ()
-        else runList ts
 
-main::IO()
-main = do
-    runList [
-         parseExpressionTest,
-         parseCorrectTest,
-         inferTypeTest,
-         isTypeTest,
-         isTypeWithContextTest,
-         evalTest
-        ]
-    return ()
-
-
-createParsableTest :: String -> String -> Test
-createParsableTest desc input = TestCase (assertBool
-    ("Does not parse: " ++ desc ++ " - Input: " ++ show input)
+createParsableTest :: String -> String -> TestTree
+createParsableTest desc input = testCase desc (assertBool
+    ("Does not parse the input: " ++ show input)
     (isRight $ (parseToExpression input :: Either ErrInfo Expression)))
 
-createParsableFailTest :: String -> String -> Test
-createParsableFailTest desc input = TestCase (assertBool
-    ("Parse should fail: " ++ desc ++ " - Input: " ++ show input)
+createParsableFailTest :: String -> String -> TestTree
+createParsableFailTest desc input = testCase desc (assertBool
+    ("Parse should fail for input: " ++ show input)
     (isLeft $ (parseToExpression input :: Either ErrInfo Expression)))
 
-parseExpressionTest = TestLabel "Parse Expressions" $ TestList [
+test_parseExpressionTest = testGroup "parsing sample expressions" [
      cTest "atom" "'bla;"
     ,cFailTest "dash in atom" "'bl-a;"
     ,cFailTest "variables should not start with a number" "2abc;"
@@ -75,11 +57,11 @@ parseExpressionTest = TestLabel "Parse Expressions" $ TestList [
     where cTest = createParsableTest
           cFailTest = createParsableFailTest
 
-createVerifyParseTest :: String -> Expression -> String -> Test
-createVerifyParseTest desc exp input = TestCase (assertEqual
+createVerifyParseTest :: String -> Expression -> String -> TestTree
+createVerifyParseTest desc exp input = testCase "" (assertEqual
     desc exp $ fromString input)
 
-parseCorrectTest = TestLabel "Parses correct results" $ TestList [
+parseCorrectTest = testGroup "Parses correct results" [
     cTest "Variable" (EVar "x") "x;",
     cTest "Atom" (CAtom "x") "'x;",
     cTest "Multiapplication" (EApplication (EVar "x") (EApplication (EVar "y") (EVar "z"))) "x y z;"
@@ -90,13 +72,13 @@ parseCorrectTest = TestLabel "Parses correct results" $ TestList [
 context :: Map String Type
 context = fromList [("x", Atom)]
 
-createInferTypeTest :: String -> Expression -> Maybe Type -> Test
-createInferTypeTest desc exp typ = TestCase (assertEqual
+createInferTypeTest :: String -> Expression -> Maybe Type -> TestTree
+createInferTypeTest desc exp typ = testCase "" (assertEqual
     ("isType" ++ desc ++ " - Input: " ++ show exp ++ " : " ++ show typ)
     typ
     (inferTypeWithContext context exp))
 
-inferTypeTest = TestLabel "inferType" $ TestList [
+inferTypeTest = testGroup "inferType" [
     cTest "Atom" "'tock;" (Just Atom),
     cTest "Lambda" "λ(x){'tock};" Nothing,
     cTest "Variable" "x;" (Just Atom),
@@ -106,18 +88,18 @@ inferTypeTest = TestLabel "inferType" $ TestList [
     where cTest = createInferTypeTest
 
 
-createIsTypeTest :: String -> Expression -> Type -> Test
-createIsTypeTest desc exp typ = TestCase (assertBool
+createIsTypeTest :: String -> Expression -> Type -> TestTree
+createIsTypeTest desc exp typ = testCase "" (assertBool
     ("isType" ++ desc ++ " - Input: " ++ show exp ++ " : " ++ show typ)
     (isType exp typ))
 
-createIsTypeFailTest :: String -> Expression -> Type -> Test
-createIsTypeFailTest desc exp typ = TestCase (assertBool
+createIsTypeFailTest :: String -> Expression -> Type -> TestTree
+createIsTypeFailTest desc exp typ = testCase "" (assertBool
     ("isType should fail - " ++ desc ++ ": " ++ show exp ++ " : " ++ show typ)
     (not $ isType exp typ))
 
 
-isTypeTest = TestLabel "isType" $ TestList [
+isTypeTest = testGroup "isType" [
     cTest "Atom" (CAtom "x") Atom,
     cTest "Atom" "'atom:Atom;" Atom,
     cFailTest "Atom" "'atom:Atom->Atom;" Atom,
@@ -130,8 +112,8 @@ isTypeTest = TestLabel "isType" $ TestList [
     where cTest = createIsTypeTest
           cFailTest = createIsTypeFailTest
 
-createIsTypeWithContextTest :: String -> VariableTypeContext -> Expression -> Type -> Test
-createIsTypeWithContextTest desc cont exp typ = TestCase (assertBool
+createIsTypeWithContextTest :: String -> VariableTypeContext -> Expression -> Type -> TestTree
+createIsTypeWithContextTest desc cont exp typ = testCase "" (assertBool
     ("isType" ++ desc ++ " - Input: " ++ show exp ++ " : " ++ show typ)
     (isTypeWithContext cont exp typ))
 
@@ -139,19 +121,19 @@ testContext = fromList [
     ("a", Atom),
     ("b", Atom)]
 
-isTypeWithContextTest = TestLabel "isType with context" $ TestList [
+isTypeWithContextTest = testGroup "isType with context" [
     cTest "Atom" "a;" Atom,
     cTest "Lambda application" "λ(x){a} b;" Atom,
     cTest "Interated lambda applications" "λ(x){a} (λ(x){a} b : Atom);" Atom
     ]
     where cTest desc = createIsTypeWithContextTest desc testContext
 
-createEvalTest :: String -> Expression -> Expression -> Test
-createEvalTest desc exp result = TestCase (assertBool
+createEvalTest :: String -> Expression -> Expression -> TestTree
+createEvalTest desc exp result = testCase "" (assertBool
     ("isType" ++ desc ++ " - Input: " ++ show exp ++ " computes to " ++ show result)
     (eval exp == Just result))
 
-evalTest = TestLabel "evaluation Test" $ TestList [
+evalTest = testGroup "evaluation Test" [
     cTest "Atom are final" "'tock;" "'tock;",
     cTest "Evaluate lambda" "λ(x){x} 'tock;" "'tock;",
     cTest "Evaluate lambda" "λ(x){x} λ(x){x} 'tock;" "'tock;"
