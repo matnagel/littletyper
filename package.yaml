@@ -5,7 +5,6 @@ dependencies:
 - base >= 4.7 && < 5
 - containers
 - trifecta
-- HUnit
 - prettyprinter
 
 library:
@@ -22,6 +21,7 @@ tests:
     main:                Discovery.hs
     source-dirs:         test
     dependencies:
+        - tasty-discover
         - tasty
         - tasty-hunit
         - fantasypie
