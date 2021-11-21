@@ -19,18 +19,18 @@ tokenize :: Parser a -> Parser a
 tokenize p = p <* whiteSpace
 
 pAtom :: Parser Expression
-pAtom = CAtom <$> MkAtom <$> (char '\'' >> (some letter))
+pAtom = CAtom . MkAtom <$> (char '\'' >> some letter)
 
 pIdentifier :: Parser String
 pIdentifier = do
-    string <- ((:) <$> letter <*> many alphaNum)
-    guard $ not $ elem string protectedKeywords
+    string <- (:) <$> letter <*> many alphaNum
+    guard $ notElem string protectedKeywords
     return string
 
 pVariable :: Parser Expression
 pVariable = EVar <$> pIdentifier
 
-lambdaEntry = (symbolic 'λ' >> return ()) <|> (symbol "lambda" >> return ())
+lambdaEntry = void(symbolic 'λ') <|> void (symbol "lambda")
 
 pLambda :: Parser Expression
 pLambda =  lambdaEntry >> do
@@ -39,7 +39,7 @@ pLambda =  lambdaEntry >> do
     return $ foldr CLambda expr variables
 
 asum :: [Parser a] -> Parser a
-asum ps = foldr (<|>) empty ps
+asum = foldr (<|>) empty
 
 pSimpleExpression :: Parser Expression
 pSimpleExpression = tokenize $ asum ps
@@ -47,8 +47,8 @@ pSimpleExpression = tokenize $ asum ps
 
 pType :: Parser Type
 pType = parens pType <|> do
-    typ <- (symbol "Atom" >> return Atom)
-    f <- optional $ (symbol "->") >> pType
+    typ <- symbol "Atom" >> return Atom
+    f <- optional $ symbol "->" >> pType
     case f of
         Nothing -> return typ
         Just range -> return $ Arrow typ range

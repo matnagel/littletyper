@@ -11,8 +11,6 @@ import Control.Monad
 
 import Types
 
-import Text.Trifecta
-
 type VariableExpressionContext = Map.Map String Expression
 
 eval :: Expression -> Maybe Expression
