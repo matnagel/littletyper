@@ -30,12 +30,12 @@ instance (IsString Atom) where
 createParsableTest :: String -> String -> TestTree
 createParsableTest desc input = testCase desc (assertBool
     ("Does not parse the input: " ++ show input)
-    (isRight $ (parseToExpression input :: Either ErrInfo Expression)))
+    (isRight (parseToExpression input :: Either ErrInfo Expression)))
 
 createParsableFailTest :: String -> String -> TestTree
 createParsableFailTest desc input = testCase desc (assertBool
     ("Parse should fail for input: " ++ show input)
-    (isLeft $ (parseToExpression input :: Either ErrInfo Expression)))
+    (isLeft (parseToExpression input :: Either ErrInfo Expression)))
 
 test_parseExpressions = testGroup "parsing sample expressions" [
      cTest "atom" "'bla;"
