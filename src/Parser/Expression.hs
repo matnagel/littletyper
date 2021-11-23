@@ -1,4 +1,4 @@
-module ParseExpression
+module Parser.Expression
   ( parseToExpression,
     ErrInfo,
   )
@@ -10,30 +10,15 @@ import qualified Data.Map.Strict as Map
 import Text.Trifecta
 
 import Types
-
-protectedKeywords = ["lambda"]
-
-tokenize :: Parser a -> Parser a
-tokenize p = p <* whiteSpace
-
-pAtom :: Parser Expression
-pAtom = CAtom . MkAtom <$> (char '\'' >> some letter)
-
-pIdentifier :: Parser String
-pIdentifier = do
-  string <- (:) <$> letter <*> many alphaNum
-  guard $ notElem string protectedKeywords
-  return string
-
-pVariable :: Parser Expression
-pVariable = EVar <$> pIdentifier
+import Parser.Token
+import Parser.Token (tokenIdentifier)
 
 lambdaEntry = void (symbolic 'λ') <|> void (symbol "lambda")
 
 pLambda :: Parser Expression
 pLambda =
   lambdaEntry >> do
-    variables <- parens (some $ tokenize pIdentifier)
+    variables <- parens (some tokenIdentifier)
     expr <- braces pCompositeExpression
     return $ foldr CLambda expr variables
 
@@ -41,9 +26,9 @@ asum :: [Parser a] -> Parser a
 asum = foldr (<|>) empty
 
 pElementaryExpression :: Parser Expression
-pElementaryExpression = tokenize $ asum ps
+pElementaryExpression = asum ps
   where
-    ps = [pLambda, pAtom, pVariable]
+    ps = [pLambda, tokenAtom, tokenVariable]
 
 pType :: Parser Type
 pType =

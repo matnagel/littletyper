@@ -12,7 +12,7 @@ import Data.Map
 
 import Types
 
-import ParseExpression
+import Parser.Expression
 import TypeChecking
 import Evaluation
 
