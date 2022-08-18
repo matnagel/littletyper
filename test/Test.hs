@@ -1,8 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 
-module Test where
-
 import Test.Tasty
 import Test.Tasty.HUnit
 import Data.Either (isLeft, isRight)
@@ -23,6 +21,18 @@ instance IsString Expression where
         Right exp -> exp
         Left str -> error $ "Static expression does not parse: " ++ show str
 
+main = defaultMain all_tests
+
+all_tests :: TestTree
+all_tests = testGroup "Tests" [
+    test_parse_expressions, 
+    test_parse_correctly, 
+    test_infer_type, 
+    test_is_type,
+    test_is_type_with_context,
+    test_evaluation
+    ]
+
 createParsableTest :: String -> String -> TestTree
 createParsableTest desc input = testCase desc (assertBool
     ("Does not parse the input: " ++ show input)
@@ -33,7 +43,7 @@ createParsableFailTest desc input = testCase desc (assertBool
     ("Parse should fail for input: " ++ show input)
     (isLeft (parseToExpression input :: Either ErrInfo Expression)))
 
-test_parseExpressions = testGroup "parsing sample expressions" [
+test_parse_expressions = testGroup "parsing sample expressions" [
      cTest "atom" "'bla;"
     ,cFailTest "dash in atom" "'bl-a;"
     ,cFailTest "variables should not start with a number" "2abc;"
@@ -57,7 +67,7 @@ createVerifyParseTest :: String -> Expression -> String -> TestTree
 createVerifyParseTest desc exp input = testCase desc (assertEqual
     desc exp $ fromString input)
 
-test_parseCorrectly = testGroup "parsing expression correctly" [
+test_parse_correctly = testGroup "parsing expression correctly" [
     cTest "a variable" (EVar "x") "x;",
     cTest "an atom" (CAtom "x") "'x;",
     cTest "multiple applications" (EApplication (EVar "x") (EApplication (EVar "y") (EVar "z"))) "x y z;"
@@ -74,7 +84,7 @@ createInferTypeTest desc exp typ = testCase desc (assertEqual
     typ
     (inferTypeWithContext context exp))
 
-test_inferType = testGroup "infering the type of an expression" [
+test_infer_type = testGroup "infering the type of an expression" [
     cTest "an atom" "'tock;" (Just Atom),
     cTest "a lambda" "λ(x){'tock};" Nothing,
     cTest "variable in context" "x;" (Just Atom),
@@ -95,7 +105,7 @@ createIsTypeFailTest desc exp typ = testCase desc (assertBool
     (not $ isType exp typ))
 
 
-test_isType = testGroup "checking that an expression has a type" [
+test_is_type = testGroup "checking that an expression has a type" [
     cTest "an atom" (CAtom "x") Atom,
     cTest "an atom" "'atom:Atom;" Atom,
     cFailTest "a function is not an atom" "'atom:Atom->Atom;" Atom,
@@ -117,7 +127,7 @@ testContext = fromList [
     ("a", Atom),
     ("b", Atom)]
 
-test_isTypeWithContext = testGroup "an expression has a type given a context" [
+test_is_type_with_context = testGroup "an expression has a type given a context" [
     cTest "an atom" "a;" Atom,
     cTest "an application" "λ(x){a} b;" Atom,
     cTest "an interated application" "λ(x){a} (λ(x){a} b : Atom);" Atom

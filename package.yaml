@@ -18,7 +18,7 @@ executables:
                         - fantasypie
 tests:
   pie-test:
-    main:                Discovery.hs
+    main:                Test.hs
     source-dirs:         test
     dependencies:
         - tasty-discover
