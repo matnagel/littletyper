@@ -19,7 +19,7 @@ import Evaluation
 
 import qualified Data.Map.Strict as Map
 
-all_parse_tests = testGroup "Check that parsing works correctly" [test_parse_expressions, test_parse_fail, test_parse_correctly]
+all_parse_tests = testGroup "Check parsing of expressions" [test_parse_expressions, test_parse_fail, test_parse_correctly]
 
 createParsableTest :: String -> String -> TestTree
 createParsableTest desc input = testCase desc (assertBool
