@@ -1,107 +1,135 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 
+import Data.Either (isLeft, isRight)
+import Data.Map
+import qualified Data.Map.Strict as Map
+import Data.String
+import Evaluation
+import ParseTests
+import Parser.Expression
 import Test.Tasty
 import Test.Tasty.HUnit
-import Data.Either (isLeft, isRight)
-import Data.String
-
-import Data.Map
-
+import TypeChecking
 import Types
 
-import Parser.Expression
-import TypeChecking
-import Evaluation
-
-import ParseTests
-
-import qualified Data.Map.Strict as Map
-
 instance IsString Expression where
-    fromString str = case parseToExpression str of
-        Right exp -> exp
-        Left str -> error $ "Static expression does not parse: " ++ show str
+  fromString str = case parseToExpression str of
+    Right exp -> exp
+    Left str -> error $ "Static expression does not parse: " ++ show str
 
 main = defaultMain all_tests
 
 all_tests :: TestTree
-all_tests = testGroup "Tests" [
-    all_parse_tests,
-    test_infer_type, 
-    test_is_type,
-    test_is_type_with_context,
-    test_evaluation
+all_tests =
+  testGroup
+    "Tests"
+    [ all_parse_tests,
+      test_infer_type,
+      test_is_type,
+      test_is_type_with_context,
+      test_evaluation
     ]
-
 
 context :: Map String Type
 context = fromList [("x", Atom)]
 
 createInferTypeTest :: String -> Expression -> Maybe Type -> TestTree
-createInferTypeTest desc exp typ = testCase desc (assertEqual
-    ("isType " ++ show exp ++ " : " ++ show typ)
-    typ
-    (inferTypeWithContext context exp))
+createInferTypeTest desc exp typ =
+  testCase
+    desc
+    ( assertEqual
+        ("isType " ++ show exp ++ " : " ++ show typ)
+        typ
+        (inferTypeWithContext context exp)
+    )
 
-test_infer_type = testGroup "infering the type of an expression" [
-    cTest "an atom" "'tock;" (Just Atom),
-    cTest "a lambda" "λ(x){'tock};" Nothing,
-    cTest "variable in context" "x;" (Just Atom),
-    cTest "unknown variable" "y;" Nothing,
-    cTest "a typed lambda" "λ(x){x} : Atom -> Atom;" $ Just (Arrow Atom Atom)
+test_infer_type =
+  testGroup
+    "infering the type of an expression"
+    [ cTest "an atom" "'tock;" (Just Atom),
+      cTest "a lambda" "λ(x){'tock};" Nothing,
+      cTest "variable in context" "x;" (Just Atom),
+      cTest "unknown variable" "y;" Nothing,
+      cTest "a typed lambda" "λ(x){x} : Atom -> Atom;" $ Just (Arrow Atom Atom)
     ]
-    where cTest = createInferTypeTest
-
+  where
+    cTest = createInferTypeTest
 
 createIsTypeTest :: String -> Expression -> Type -> TestTree
-createIsTypeTest desc exp typ = testCase desc (assertBool
-    ("isType " ++ show exp ++ " : " ++ show typ)
-    (isType exp typ))
+createIsTypeTest desc exp typ =
+  testCase
+    desc
+    ( assertBool
+        ("isType " ++ show exp ++ " : " ++ show typ)
+        (isType exp typ)
+    )
 
 createIsTypeFailTest :: String -> Expression -> Type -> TestTree
-createIsTypeFailTest desc exp typ = testCase desc (assertBool
-    ("isType should fail " ++ show exp ++ " : " ++ show typ)
-    (not $ isType exp typ))
+createIsTypeFailTest desc exp typ =
+  testCase
+    desc
+    ( assertBool
+        ("isType should fail " ++ show exp ++ " : " ++ show typ)
+        (not $ isType exp typ)
+    )
 
-
-test_is_type = testGroup "checking that an expression has a type" [
-    cTest "an atom" (CAtom "x") Atom,
-    cTest "an atom" "'atom:Atom;" Atom,
-    cFailTest "a function is not an atom" "'atom:Atom->Atom;" Atom,
-    cFailTest "a variable" (EVar "x") Atom,
-    cTest "a lambda" "λ(x){'tock};" (Arrow Atom Atom),
-    cFailTest "another multi-argument lambda" "λ(x y){'tock};" (Arrow Atom Atom),
-    cTest "the identity" "λ(x){x};" (Arrow Atom Atom),
-    cTest "an application" "λ(x){x} 'tock;" Atom
+test_is_type =
+  testGroup
+    "checking that an expression has a type"
+    [ cTest "an atom" (CAtom "x") Atom,
+      cTest "an atom" "'atom:Atom;" Atom,
+      cFailTest "a function is not an atom" "'atom:Atom->Atom;" Atom,
+      cFailTest "a variable" (EVar "x") Atom,
+      cTest "a lambda" "λ(x){'tock};" (Arrow Atom Atom),
+      cFailTest "another multi-argument lambda" "λ(x y){'tock};" (Arrow Atom Atom),
+      cTest "the identity" "λ(x){x};" (Arrow Atom Atom),
+      cTest "an application" "λ(x){x} 'tock;" Atom
     ]
-    where cTest = createIsTypeTest
-          cFailTest = createIsTypeFailTest
+  where
+    cTest = createIsTypeTest
+    cFailTest = createIsTypeFailTest
 
 createIsTypeWithContextTest :: String -> VariableTypeContext -> Expression -> Type -> TestTree
-createIsTypeWithContextTest desc cont exp typ = testCase desc (assertBool
-    ("isType " ++ show exp ++ " : " ++ show typ)
-    (isTypeWithContext cont exp typ))
+createIsTypeWithContextTest desc cont exp typ =
+  testCase
+    desc
+    ( assertBool
+        ("isType " ++ show exp ++ " : " ++ show typ)
+        (isTypeWithContext cont exp typ)
+    )
 
-testContext = fromList [
-    ("a", Atom),
-    ("b", Atom)]
-
-test_is_type_with_context = testGroup "an expression has a type given a context" [
-    cTest "an atom" "a;" Atom,
-    cTest "an application" "λ(x){a} b;" Atom,
-    cTest "an interated application" "λ(x){a} (λ(x){a} b : Atom);" Atom
+testContext =
+  fromList
+    [ ("a", Atom),
+      ("b", Atom)
     ]
-    where cTest desc = createIsTypeWithContextTest desc testContext
+
+test_is_type_with_context =
+  testGroup
+    "an expression has a type given a context"
+    [ cTest "an atom" "a;" Atom,
+      cTest "an application" "λ(x){a} b;" Atom,
+      cTest "an interated application" "λ(x){a} (λ(x){a} b : Atom);" Atom
+    ]
+  where
+    cTest desc = createIsTypeWithContextTest desc testContext
 
 createEvalTest :: String -> Expression -> Expression -> TestTree
-createEvalTest desc exp result = testCase desc (assertBool
-    ("isType " ++ show exp ++ " computes to " ++ show result)
-    (eval exp == Just result))
+createEvalTest desc exp result =
+  testCase
+    desc
+    ( assertBool
+        ("isType " ++ show exp ++ " computes to " ++ show result)
+        (eval exp == Just result)
+    )
 
-test_evaluation = testGroup "evaluate expressions" [
-    cTest "atoms evaluate to themselves" "'tock;" "'tock;",
-    cTest "a lambda application" "λ(x){x} 'tock;" "'tock;",
-    cTest "an iterated lambda application" "λ(x){x} λ(x){x} 'tock;" "'tock;"
+test_evaluation =
+  testGroup
+    "evaluate expressions"
+    [ cTest "atoms evaluate to themselves" "'tock;" "'tock;",
+      cTest "a lambda application" "λ(x){x} 'tock;" "'tock;",
+      cTest "an iterated lambda application" "λ(x){x} λ(x){x} 'tock;" "'tock;"
     ]
-    where cTest desc = createEvalTest desc
+  where
+    cTest desc = createEvalTest desc
