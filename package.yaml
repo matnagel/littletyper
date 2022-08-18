@@ -1,11 +1,11 @@
-name:                fantasypie
-version:             0.1.0.0
+name: fantasypie
+version: 0.1.0.0
 
 dependencies:
-- base >= 4.7 && < 5
-- containers
-- trifecta
-- prettyprinter
+        - base >= 4.7 && < 5
+        - containers
+        - trifecta
+        - prettyprinter
 
 library:
         source-dirs: src
@@ -17,11 +17,11 @@ executables:
                 dependencies:
                         - fantasypie
 tests:
-  pie-test:
-    main:                Test.hs
-    source-dirs:         test
-    dependencies:
-        - tasty-discover
-        - tasty
-        - tasty-hunit
-        - fantasypie
+        pie-test:
+                main: Test.hs
+                source-dirs: test
+                dependencies:
+                        - tasty-discover
+                        - tasty
+                        - tasty-hunit
+                        - fantasypie
