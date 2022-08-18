@@ -2,16 +2,13 @@
 
 module Types (
     Expression (..),
-    Atom (..),
     Type (..)
     )
     where
 
 import Data.Map.Strict as Map
 
-newtype Atom = MkAtom String deriving (Eq, Show)
-
-data Expression = CAtom Atom
+data Expression = CAtom String
                 | CLambda String Expression
                 | EVar String
                 | EApplication Expression Expression

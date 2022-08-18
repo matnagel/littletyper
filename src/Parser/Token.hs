@@ -14,7 +14,7 @@ tokenize :: Parser a -> Parser a
 tokenize p = p <* whiteSpace
 
 tokenAtom :: Parser Expression
-tokenAtom = tokenize $ CAtom . MkAtom <$> (char '\'' >> some letter)
+tokenAtom = tokenize $ CAtom <$> (char '\'' >> some letter)
 
 identifier :: Parser String
 identifier = do

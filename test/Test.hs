@@ -23,10 +23,6 @@ instance IsString Expression where
         Right exp -> exp
         Left str -> error $ "Static expression does not parse: " ++ show str
 
-instance (IsString Atom) where
-    fromString = MkAtom
-
-
 createParsableTest :: String -> String -> TestTree
 createParsableTest desc input = testCase desc (assertBool
     ("Does not parse the input: " ++ show input)
