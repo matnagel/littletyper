@@ -15,6 +15,7 @@ import Parser.Token (tokenIdentifier)
 
 lambdaEntry = void (symbolic 'λ') <|> void (symbol "lambda")
 
+
 pLambda :: Parser Expression
 pLambda =
   lambdaEntry >> do
