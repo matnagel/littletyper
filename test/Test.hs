@@ -7,6 +7,7 @@ import qualified Data.Map.Strict as Map
 import Data.String
 import EvalTests
 import Evaluation
+import FileTests
 import ParseTests
 import Parser.Expression
 import Test.Tasty
@@ -15,13 +16,19 @@ import TypeChecking
 import TypeTests
 import Types
 
-main = defaultMain all_tests
+main = all_tests >>= defaultMain
 
-all_tests :: TestTree
-all_tests =
-  testGroup
-    "Tests"
-    [ all_parse_tests,
-      all_type_tests,
-      all_eval_tests
-    ]
+all_tests :: IO TestTree
+all_tests = do
+  iot <- io_tests
+  return $
+    testGroup
+      "Tests"
+      [ all_parse_tests,
+        all_type_tests,
+        all_eval_tests,
+        iot
+      ]
+
+io_tests :: IO TestTree
+io_tests = all_file_tests
