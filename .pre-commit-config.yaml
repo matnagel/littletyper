@@ -1,0 +1,9 @@
+repos:
+  - repo: local
+    hooks:
+      - id: ormolu
+        name: ormolu format
+        entry: ormolu -i
+        language: system
+        types: [haskell]
+        pass_filenames: true

@@ -7,14 +7,12 @@ where
 import Control.Applicative
 import Control.Monad
 import qualified Data.Map.Strict as Map
-import Text.Trifecta
-
-import Types
 import Parser.Token
 import Parser.Token (tokenIdentifier)
+import Text.Trifecta
+import Types
 
 lambdaEntry = void (symbolic 'λ') <|> void (symbol "lambda")
-
 
 pLambda :: Parser Expression
 pLambda =

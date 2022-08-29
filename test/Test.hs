@@ -5,14 +5,14 @@ import Data.Either (isLeft, isRight)
 import Data.Map
 import qualified Data.Map.Strict as Map
 import Data.String
+import EvalTests
 import Evaluation
 import ParseTests
-import TypeTests
-import EvalTests
 import Parser.Expression
 import Test.Tasty
 import Test.Tasty.HUnit
 import TypeChecking
+import TypeTests
 import Types
 
 main = defaultMain all_tests

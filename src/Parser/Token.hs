@@ -1,12 +1,13 @@
-module Parser.Token (
-    tokenAtom,
+module Parser.Token
+  ( tokenAtom,
     tokenVariable,
-    tokenIdentifier
-) where
+    tokenIdentifier,
+  )
+where
 
+import Control.Monad
 import Text.Trifecta
 import Types
-import Control.Monad
 
 protectedKeywords = ["lambda"]
 
@@ -22,7 +23,7 @@ identifier = do
   guard $ notElem string protectedKeywords
   return string
 
-tokenIdentifier:: Parser String
+tokenIdentifier :: Parser String
 tokenIdentifier = tokenize $ identifier
 
 tokenVariable :: Parser Expression

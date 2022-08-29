@@ -6,17 +6,17 @@ module EvalTests
   )
 where
 
-import Data.Either (isLeft, isRight, fromRight)
+import Data.Either (fromRight, isLeft, isRight)
 import Data.Map
 import qualified Data.Map.Strict as Map
 import Data.String
 import Evaluation
 import ParseTests
-import TypeTests
 import Parser.Expression
 import Test.Tasty
 import Test.Tasty.HUnit
 import TypeChecking
+import TypeTests
 import Types
 
 all_eval_tests = test_evaluation

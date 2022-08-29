@@ -1,11 +1,12 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 
-module TypeTests (
-  all_type_tests
-) where
+module TypeTests
+  ( all_type_tests,
+  )
+where
 
-import Data.Either (isLeft, isRight, fromRight)
+import Data.Either (fromRight, isLeft, isRight)
 import Data.Map
 import qualified Data.Map.Strict as Map
 import Data.String
@@ -68,8 +69,7 @@ createIsTypeFailTest desc exp typ =
 test_is_type =
   testGroup
     "checking that an expression has a type"
-    [ 
-      cTest "an atom" "'atom:Atom;" Atom,
+    [ cTest "an atom" "'atom:Atom;" Atom,
       cFailTest "a function is not an atom" "'atom:Atom->Atom;" Atom,
       cFailTest "a variable" "x;" Atom,
       cTest "a lambda" "λ(x){'tock};" (Arrow Atom Atom),
