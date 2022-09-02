@@ -2,22 +2,18 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 
 module ParseTests
-  ( all_parse_tests,
+  ( allParseTests,
   )
 where
 
 import Data.Either (fromRight, isLeft, isRight)
-import Data.Map
 import qualified Data.Map.Strict as Map
-import Data.String
-import Evaluation
-import Parser.Expression
-import Test.Tasty
-import Test.Tasty.HUnit
-import TypeChecking
-import Types
+import Parser.Expression (ErrInfo, parseToExpression)
+import Test.Tasty (TestTree, testGroup)
+import Test.Tasty.HUnit (assertBool, assertEqual, testCase)
+import Types (Expression (CAtom, EApplication, EVar))
 
-all_parse_tests = testGroup "Check parsing of expressions" [test_parse_expressions, test_parse_fail, test_parse_correctly]
+allParseTests = testGroup "Check parsing of expressions" [testParseExpressions, testParseFail, testParseCorrectly]
 
 createParsableTest :: String -> String -> TestTree
 createParsableTest desc input =
@@ -28,7 +24,8 @@ createParsableTest desc input =
         (isRight (parseToExpression input :: Either ErrInfo Expression))
     )
 
-test_parse_expressions =
+testParseExpressions :: TestTree
+testParseExpressions =
   testGroup
     "parsing sample expressions"
     [ cTest "atom" "'bla;",
@@ -56,7 +53,8 @@ createParsableFailTest desc input =
         (isLeft (parseToExpression input :: Either ErrInfo Expression))
     )
 
-test_parse_fail =
+testParseFail :: TestTree
+testParseFail =
   testGroup
     "not parsing incorrect expressions"
     [ cFailTest "dash in atom" "'bl-a;",
@@ -73,10 +71,11 @@ createVerifyParseTest desc exp input =
     ( assertEqual
         desc
         exp
-        $ (fromRight (error $ "Could not parse" ++ show input) (parseToExpression input :: Either ErrInfo Expression))
+        (fromRight (error $ "Could not parse" ++ show input) (parseToExpression input :: Either ErrInfo Expression))
     )
 
-test_parse_correctly =
+testParseCorrectly :: TestTree
+testParseCorrectly =
   testGroup
     "parsing expression correctly"
     [ cTest "a variable" (EVar "x") "x;",

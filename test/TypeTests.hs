@@ -2,26 +2,29 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 
 module TypeTests
-  ( all_type_tests,
+  ( allTypeTests,
   )
 where
 
 import Data.Either (fromRight, isLeft, isRight)
-import Data.Map
+import Data.Map (Map, fromList)
 import qualified Data.Map.Strict as Map
-import Data.String
-import Evaluation
-import ParseTests
-import Parser.Expression
-import Test.Tasty
-import Test.Tasty.HUnit
+import Parser.Expression (ErrInfo, parseToExpression)
+import Test.Tasty (TestTree, testGroup)
+import Test.Tasty.HUnit (assertBool, assertEqual, testCase)
 import TypeChecking
-import Types
+  ( VariableTypeContext,
+    inferTypeWithContext,
+    isType,
+    isTypeWithContext,
+  )
+import Types (Expression, Type (..))
 
-all_type_tests = testGroup "Check typing of expressions" [test_infer_type, test_is_type, test_is_type_with_context]
+allTypeTests :: TestTree
+allTypeTests = testGroup "Check typing of expressions" [testInferType, testIsType, testIsTypeWithContext]
 
-convert_string :: String -> Expression
-convert_string input = (fromRight (error $ "Could not parse" ++ show input) (parseToExpression input :: Either ErrInfo Expression))
+convertString :: String -> Expression
+convertString input = fromRight (error $ "Could not parse" ++ show input) (parseToExpression input :: Either ErrInfo Expression)
 
 context :: Map String Type
 context = fromList [("x", Atom)]
@@ -33,10 +36,11 @@ createInferTypeTest desc exp typ =
     ( assertEqual
         ("isType " ++ show exp ++ " : " ++ show typ)
         typ
-        (inferTypeWithContext context $ convert_string exp)
+        (inferTypeWithContext context $ convertString exp)
     )
 
-test_infer_type =
+testInferType :: TestTree
+testInferType =
   testGroup
     "infering the type of an expression"
     [ cTest "an atom" "'tock;" (Just Atom),
@@ -54,7 +58,7 @@ createIsTypeTest desc exp typ =
     desc
     ( assertBool
         ("isType " ++ show exp ++ " : " ++ show typ)
-        (isType (convert_string exp) typ)
+        (isType (convertString exp) typ)
     )
 
 createIsTypeFailTest :: String -> String -> Type -> TestTree
@@ -63,10 +67,11 @@ createIsTypeFailTest desc exp typ =
     desc
     ( assertBool
         ("isType should fail " ++ show exp ++ " : " ++ show typ)
-        (not $ isType (convert_string exp) typ)
+        (not $ isType (convertString exp) typ)
     )
 
-test_is_type =
+testIsType :: TestTree
+testIsType =
   testGroup
     "checking that an expression has a type"
     [ cTest "an atom" "'atom:Atom;" Atom,
@@ -87,16 +92,18 @@ createIsTypeWithContextTest desc cont exp typ =
     desc
     ( assertBool
         ("isType " ++ show exp ++ " : " ++ show typ)
-        (isTypeWithContext cont (convert_string exp) typ)
+        (isTypeWithContext cont (convertString exp) typ)
     )
 
+testContext :: Map String Type
 testContext =
   fromList
     [ ("a", Atom),
       ("b", Atom)
     ]
 
-test_is_type_with_context =
+testIsTypeWithContext :: TestTree
+testIsTypeWithContext =
   testGroup
     "an expression has a type given a context"
     [ cTest "an atom" "a;" Atom,

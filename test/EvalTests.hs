@@ -2,27 +2,23 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 
 module EvalTests
-  ( all_eval_tests,
+  ( allEvalTests,
   )
 where
 
 import Data.Either (fromRight, isLeft, isRight)
-import Data.Map
 import qualified Data.Map.Strict as Map
-import Data.String
-import Evaluation
-import ParseTests
-import Parser.Expression
-import Test.Tasty
-import Test.Tasty.HUnit
-import TypeChecking
-import TypeTests
-import Types
+import Evaluation (eval)
+import Parser.Expression (ErrInfo, parseToExpression)
+import Test.Tasty (TestTree, testGroup)
+import Test.Tasty.HUnit (assertBool, testCase)
+import Types (Expression)
 
-all_eval_tests = test_evaluation
+allEvalTests :: TestTree
+allEvalTests = testEvaluation
 
-convert_string :: String -> Expression
-convert_string input = (fromRight (error $ "Could not parse" ++ show input) (parseToExpression input :: Either ErrInfo Expression))
+convertString :: String -> Expression
+convertString input = fromRight (error $ "Could not parse" ++ show input) (parseToExpression input :: Either ErrInfo Expression)
 
 createEvalTest :: String -> String -> String -> TestTree
 createEvalTest desc exp result =
@@ -30,10 +26,11 @@ createEvalTest desc exp result =
     desc
     ( assertBool
         ("isType " ++ show exp ++ " computes to " ++ show result)
-        (eval (convert_string exp) == Just (convert_string result))
+        (eval (convertString exp) == Just (convertString result))
     )
 
-test_evaluation =
+testEvaluation :: TestTree
+testEvaluation =
   testGroup
     "evaluate expressions"
     [ cTest "atoms evaluate to themselves" "'tock;" "'tock;",
