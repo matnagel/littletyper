@@ -9,7 +9,7 @@ repos:
         pass_filenames: true
   - repo: local
     hooks:
-      - id: stack
+      - id: stack_test
         name: stack test
         entry: stack test
         language: system
