@@ -6,6 +6,7 @@ dependencies:
         - containers
         - trifecta
         - prettyprinter
+        - filepath
 
 library:
         source-dirs: src

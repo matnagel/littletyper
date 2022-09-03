@@ -19,12 +19,10 @@ import TypeChecking
     isTypeWithContext,
   )
 import Types (Expression, Type (..))
+import Utils (convertString)
 
 allTypeTests :: TestTree
 allTypeTests = testGroup "Check typing of expressions" [testInferType, testIsType, testIsTypeWithContext]
-
-convertString :: String -> Expression
-convertString input = fromRight (error $ "Could not parse" ++ show input) (parseToExpression input :: Either ErrInfo Expression)
 
 context :: Map String Type
 context = fromList [("x", Atom)]

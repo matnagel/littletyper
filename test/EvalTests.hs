@@ -9,16 +9,13 @@ where
 import Data.Either (fromRight, isLeft, isRight)
 import qualified Data.Map.Strict as Map
 import Evaluation (eval)
-import Parser.Expression (ErrInfo, parseToExpression)
 import Test.Tasty (TestTree, testGroup)
 import Test.Tasty.HUnit (assertBool, testCase)
 import Types (Expression)
+import Utils (convertString)
 
 allEvalTests :: TestTree
 allEvalTests = testEvaluation
-
-convertString :: String -> Expression
-convertString input = fromRight (error $ "Could not parse" ++ show input) (parseToExpression input :: Either ErrInfo Expression)
 
 createEvalTest :: String -> String -> String -> TestTree
 createEvalTest desc exp result =
