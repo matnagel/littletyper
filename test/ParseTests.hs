@@ -13,6 +13,7 @@ import Test.Tasty (TestTree, testGroup)
 import Test.Tasty.HUnit (assertBool, assertEqual, testCase)
 import Types (Expression (CAtom, EApplication, EVar))
 
+allParseTests :: TestTree
 allParseTests = testGroup "Check parsing of expressions" [testParseExpressions, testParseFail, testParseCorrectly]
 
 createParsableTest :: String -> String -> TestTree

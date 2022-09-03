@@ -7,16 +7,10 @@ module FileTests
 where
 
 import Data.Either (fromRight, isLeft, isRight)
-import Data.Map
 import qualified Data.Map.Strict as Map
-import Data.String
-import Evaluation
-import Parser.Expression
-import System.Directory
-import Test.Tasty
-import Test.Tasty.HUnit
-import TypeChecking
-import Types
+import System.Directory (listDirectory)
+import Test.Tasty (TestTree, testGroup)
+import Test.Tasty.HUnit (assertBool, testCase)
 
 allFileTests :: IO TestTree
 allFileTests = createTests <$> filenames
