@@ -28,4 +28,4 @@ createTest fp =
     return $ assertBool "could not parse" $ isRight expression
 
 createTests :: [FilePath] -> IO TestTree
-createTests fps = testGroup "Testing with pie files" <$> (sequence (createTest <$> fps) :: IO [TestTree])
+createTests fps = testGroup "Testing with pie files" <$> sequence (createTest <$> fps)
