@@ -6,8 +6,6 @@ module Types
   )
 where
 
-import Data.Map.Strict as Map
-
 data Expression
   = CAtom String
   | CLambda String Expression

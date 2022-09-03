@@ -4,10 +4,8 @@ module Evaluation
   )
 where
 
-import Control.Applicative
-import Control.Monad
 import qualified Data.Map.Strict as Map
-import Types
+import Types (Expression (CAtom, CLambda, EApplication, EVar))
 
 type VariableExpressionContext = Map.Map String Expression
 

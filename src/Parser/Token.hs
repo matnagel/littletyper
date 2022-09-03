@@ -5,9 +5,17 @@ module Parser.Token
   )
 where
 
-import Control.Monad
+import Control.Monad (guard)
 import Text.Trifecta
-import Types
+  ( CharParsing (char),
+    Parser,
+    alphaNum,
+    letter,
+    many,
+    some,
+    whiteSpace,
+  )
+import Types (Expression (CAtom, EVar))
 
 protectedKeywords = ["lambda"]
 

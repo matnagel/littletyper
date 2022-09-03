@@ -6,10 +6,8 @@ module TypeChecking
   )
 where
 
-import Control.Applicative
-import Control.Monad
 import qualified Data.Map.Strict as Map
-import Types
+import Types (Expression (..), Type (..))
 
 type VariableTypeContext = Map.Map String Type
 

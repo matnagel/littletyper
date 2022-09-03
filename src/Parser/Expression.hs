@@ -64,7 +64,10 @@ pCompositeExpression =
     foldr1 EApplication
       <$> some (pElementaryExpression <|> parens pCompositeExpression)
 
+pExpression :: Parser Expression
+pExpression = pCompositeExpression
+
 parseToExpression :: String -> Either ErrInfo Expression
-parseToExpression str = case parseString (pCompositeExpression <* symbolic ';') mempty str of
+parseToExpression str = case parseString (pExpression <* symbolic ';') mempty str of
   Success x -> Right x
   Failure err -> Left err
