@@ -15,16 +15,17 @@ import Test.Tasty (TestTree, testGroup)
 import Test.Tasty.HUnit (assertBool, testCase)
 
 allFileTests :: IO TestTree
-allFileTests = createTests <$> filenames
+allFileTests = filenames >>= createTests
 
 filenames :: IO [FilePath]
 filenames = listDirectory "test/resources"
 
-createTest :: FilePath -> TestTree
-createTest fp = testCase (show fp) $ do
-  content <- readFile $ "test/resources" </> fp
-  let expression = parseToExpression content
-  assertBool "could not parse" $ isRight expression
+createTest :: FilePath -> IO TestTree
+createTest fp =
+  testCase (show fp) <$> do
+    content <- readFile $ "test/resources" </> fp
+    let expression = parseToExpression content
+    return $ assertBool "could not parse" $ isRight expression
 
-createTests :: [FilePath] -> TestTree
-createTests fps = testGroup "Testing with pie files" (createTest <$> fps)
+createTests :: [FilePath] -> IO TestTree
+createTests fps = testGroup "Testing with pie files" <$> (sequence (createTest <$> fps) :: IO [TestTree])
