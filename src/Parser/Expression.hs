@@ -5,13 +5,29 @@ module Parser.Expression
 where
 
 import Control.Applicative
-import Control.Monad
+  ( Alternative (empty, some, (<|>)),
+    optional,
+  )
+import Control.Monad (void)
 import qualified Data.Map.Strict as Map
 import Parser.Token
-import Parser.Token (tokenIdentifier)
+  ( tokenAtom,
+    tokenIdentifier,
+    tokenVariable,
+  )
 import Text.Trifecta
-import Types
+  ( ErrInfo,
+    Parser,
+    Result (Failure, Success),
+    braces,
+    parens,
+    parseString,
+    symbol,
+    symbolic,
+  )
+import Types (Expression (Athe, CLambda, EApplication), Type (..))
 
+lambdaEntry :: Parser ()
 lambdaEntry = void (symbolic 'λ') <|> void (symbol "lambda")
 
 pLambda :: Parser Expression
