@@ -32,7 +32,7 @@ identifier = do
   return string
 
 tokenIdentifier :: Parser String
-tokenIdentifier = tokenize $ identifier
+tokenIdentifier = tokenize identifier
 
 tokenVariable :: Parser Expression
 tokenVariable = tokenize $ EVar <$> identifier

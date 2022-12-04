@@ -23,7 +23,7 @@ filenames = listDirectory "test/resources"
 createTest :: FilePath -> IO TestTree
 createTest fp =
   testCase (show fp) <$> do
-    content <- readFile $ "test/resources" </> fp
+    content <- readFile $ "test" </> "resources" </> fp
     let expression = parseToExpression content
     return $ assertBool "could not parse" $ isRight expression
 

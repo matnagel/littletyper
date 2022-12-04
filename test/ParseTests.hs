@@ -8,16 +8,16 @@ where
 
 import Data.Either (fromRight, isLeft, isRight)
 import qualified Data.Map.Strict as Map
-import Parser.Expression (ErrInfo, parseToExpression)
+import Parser.Expression (ErrInfo, parseToDefinition, parseToExpression)
 import Test.Tasty (TestTree, testGroup)
 import Test.Tasty.HUnit (assertBool, assertEqual, testCase)
 import Types (Expression (CAtom, EApplication, EVar))
 
 allParseTests :: TestTree
-allParseTests = testGroup "Check parsing of expressions" [testParseExpressions, testParseFail, testParseCorrectly]
+allParseTests = testGroup "Check parsing of expressions" [testParseExpressions, testParseExpressionFail, testParseExpressionCorrectly, testParseDefinition]
 
-createParsableTest :: String -> String -> TestTree
-createParsableTest desc input =
+createParseExpressionTest :: String -> String -> TestTree
+createParseExpressionTest desc input =
   testCase
     desc
     ( assertBool
@@ -43,10 +43,10 @@ testParseExpressions =
       cTest "Annotation arrow" "'tock:Atom->Atom;"
     ]
   where
-    cTest = createParsableTest
+    cTest = createParseExpressionTest
 
-createParsableFailTest :: String -> String -> TestTree
-createParsableFailTest desc input =
+createParseExpressionFailTest :: String -> String -> TestTree
+createParseExpressionFailTest desc input =
   testCase
     desc
     ( assertBool
@@ -54,8 +54,8 @@ createParsableFailTest desc input =
         (isLeft (parseToExpression input :: Either ErrInfo Expression))
     )
 
-testParseFail :: TestTree
-testParseFail =
+testParseExpressionFail :: TestTree
+testParseExpressionFail =
   testGroup
     "not parsing incorrect expressions"
     [ cFailTest "dash in atom" "'bl-a;",
@@ -63,10 +63,10 @@ testParseFail =
       cFailTest "variables are not allowed to be protected keywords" "lambda;"
     ]
   where
-    cFailTest = createParsableFailTest
+    cFailTest = createParseExpressionFailTest
 
-createVerifyParseTest :: String -> Expression -> String -> TestTree
-createVerifyParseTest desc exp input =
+createVerifyParseExpressionTest :: String -> Expression -> String -> TestTree
+createVerifyParseExpressionTest desc exp input =
   testCase
     desc
     ( assertEqual
@@ -75,8 +75,8 @@ createVerifyParseTest desc exp input =
         (fromRight (error $ "Could not parse" ++ show input) (parseToExpression input :: Either ErrInfo Expression))
     )
 
-testParseCorrectly :: TestTree
-testParseCorrectly =
+testParseExpressionCorrectly :: TestTree
+testParseExpressionCorrectly =
   testGroup
     "parsing expression correctly"
     [ cTest "a variable" (EVar "x") "x;",
@@ -84,4 +84,22 @@ testParseCorrectly =
       cTest "multiple applications" (EApplication (EVar "x") (EApplication (EVar "y") (EVar "z"))) "x y z;"
     ]
   where
-    cTest = createVerifyParseTest
+    cTest = createVerifyParseExpressionTest
+
+createParseDefinitionTest :: String -> String -> TestTree
+createParseDefinitionTest desc input =
+  testCase
+    desc
+    ( assertBool
+        ("Does not parse the input: " ++ show input)
+        (isRight (parseToDefinition input))
+    )
+
+testParseDefinition :: TestTree
+testParseDefinition =
+  testGroup
+    "parsing sample blocks"
+    [ cTest "typed variable" "var foo : Atom = 'tock;"
+    ]
+  where
+    cTest = createParseDefinitionTest

@@ -1,5 +1,6 @@
 module Parser.Expression
   ( parseToExpression,
+    parseToDefinition,
     ErrInfo,
   )
 where
@@ -69,5 +70,20 @@ pExpression = pCompositeExpression
 
 parseToExpression :: String -> Either ErrInfo Expression
 parseToExpression str = case parseString (pExpression <* symbolic ';') mempty str of
+  Success x -> Right x
+  Failure err -> Left err
+
+pDefinition :: Parser (String, Type, Expression)
+pDefinition = do
+  symbol "var"
+  name <- tokenIdentifier
+  symbolic ':'
+  t <- pType
+  symbolic '='
+  exp <- pExpression
+  return (name, t, exp)
+
+parseToDefinition :: String -> Either ErrInfo (String, Type, Expression)
+parseToDefinition str = case parseString (pDefinition <* symbolic ';') mempty str of
   Success x -> Right x
   Failure err -> Left err
