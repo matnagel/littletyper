@@ -17,7 +17,7 @@ import Text.Trifecta
   )
 import Types (Expression (CAtom, EVar))
 
-protectedKeywords = ["lambda"]
+protectedKeywords = ["lambda", "const"]
 
 tokenize :: Parser a -> Parser a
 tokenize p = p <* whiteSpace

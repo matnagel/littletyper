@@ -2,6 +2,8 @@ module Parser.Expression
   ( parseToExpression,
     parseToDefinition,
     ErrInfo,
+    pExpression,
+    pType,
   )
 where
 
@@ -75,7 +77,7 @@ parseToExpression str = case parseString (pExpression <* symbolic ';') mempty st
 
 pDefinition :: Parser (String, Type, Expression)
 pDefinition = do
-  symbol "var"
+  symbol "const"
   name <- tokenIdentifier
   symbolic ':'
   t <- pType

@@ -9,6 +9,7 @@ where
 import Data.Either (fromRight, isLeft, isRight)
 import qualified Data.Map.Strict as Map
 import Parser.Expression (ErrInfo, parseToExpression)
+import Parser.File (parseFileContent)
 import System.Directory (listDirectory)
 import System.FilePath ((</>))
 import Test.Tasty (TestTree, testGroup)
@@ -24,7 +25,7 @@ createTest :: FilePath -> IO TestTree
 createTest fp =
   testCase (show fp) <$> do
     content <- readFile $ "test" </> "resources" </> fp
-    let expression = parseToExpression content
+    let expression = parseFileContent content
     return $ assertBool "could not parse" $ isRight expression
 
 createTests :: [FilePath] -> IO TestTree

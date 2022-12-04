@@ -99,7 +99,7 @@ testParseDefinition :: TestTree
 testParseDefinition =
   testGroup
     "parsing sample blocks"
-    [ cTest "typed variable" "var foo : Atom = 'tock;"
+    [ cTest "typed variable" "const foo : Atom = 'tock;"
     ]
   where
     cTest = createParseDefinitionTest
