@@ -33,14 +33,14 @@ testParseExpressions =
       cTest "ignore whitespaces" "'bla\t\n;",
       cTest "ignore useless parens" "('bla);",
       cTest "ignore useless parens with spaces" "( 'bla);",
-      cTest "A Variable" "(thisisavaria2ble);",
-      cTest "An application" "bla blip;",
-      cTest "A lambda" "λ (a b) {'bla};",
-      cTest "Brackets expression" "λ (a) {a} (λ(x) {x} 'tock);",
-      cTest "Annotation" "'tock:Atom;",
-      cTest "Annotation brackets" "'tock:(Atom);",
-      cTest "Annotation brackets with arrow" "'tock:(Atom->Atom);",
-      cTest "Annotation arrow" "'tock:Atom->Atom;"
+      cTest "a variable" "(thisisavaria2ble);",
+      cTest "an application" "bla blip;",
+      cTest "a lambda" "λ (a b) {'bla};",
+      cTest "brackets expression" "λ (a) {a} (λ(x) {x} 'tock);",
+      cTest "annotation" "'tock:Atom;",
+      cTest "annotation brackets" "'tock:(Atom);",
+      cTest "annotation brackets with arrow" "'tock:(Atom->Atom);",
+      cTest "annotation arrow" "'tock:Atom->Atom;"
     ]
   where
     cTest = createParseExpressionTest
