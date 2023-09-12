@@ -2,28 +2,28 @@ name: fantasypie
 version: 0.1.0.0
 
 dependencies:
-        - base >= 4.7 && < 5
-        - containers
-        - trifecta
-        - prettyprinter
-        - filepath
+  - base >= 4.7 && < 5
+  - containers
+  - trifecta
+  - prettyprinter
+  - filepath
 
 library:
-        source-dirs: src
+  source-dirs: src
 
 executables:
-        pie:
-                main: Main.hs
-                source-dirs: app/
-                dependencies:
-                        - fantasypie
+  pie:
+    main: Main.hs
+    source-dirs: app/
+    dependencies:
+      - fantasypie
 tests:
-        pie-test:
-                main: Test.hs
-                source-dirs: test
-                dependencies:
-                        - tasty-discover
-                        - tasty
-                        - tasty-hunit
-                        - fantasypie
-                        - directory
+  pie-test:
+    main: Test.hs
+    source-dirs: test
+    dependencies:
+      - tasty-discover
+      - tasty
+      - tasty-hunit
+      - fantasypie
+      - directory
