@@ -11,7 +11,7 @@ data Expression
   | CLambda !String !Expression
   | EVar !String
   | EApplication !Expression !Expression
-  | Athe !Expression !Type
+  | AThe !Expression !Type
   deriving (Eq, Show)
 
 data Type = Atom | Arrow !Type !Type deriving (Eq, Show)

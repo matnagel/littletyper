@@ -26,7 +26,7 @@ import Text.Trifecta
     symbol,
     symbolic,
   )
-import Types (Expression (Athe, CLambda, EApplication), Type (..))
+import Types (Expression (AThe, CLambda, EApplication), Type (..))
 
 pDefinition :: Parser (String, Type, Expression)
 pDefinition = do

@@ -14,7 +14,7 @@ type VariableTypeContext = Map.Map String Type
 inferTypeWithContext :: VariableTypeContext -> Expression -> Maybe Type
 inferTypeWithContext context (CAtom str) = Just Atom
 inferTypeWithContext context (EVar varname) = Map.lookup varname context
-inferTypeWithContext _ (Athe _ typ) = Just typ
+inferTypeWithContext _ (AThe _ typ) = Just typ
 inferTypeWithContext _ _ = Nothing
 
 isType :: Expression -> Type -> Bool
@@ -33,7 +33,7 @@ isTypeWithContext context (EApplication fun arg) typ = case inferTypeWithContext
   Just atyp ->
     isTypeWithContext context arg atyp
       && isTypeWithContext context fun (Arrow atyp typ)
-isTypeWithContext context (Athe exp atyp) typ =
+isTypeWithContext context (AThe exp atyp) typ =
   (atyp == typ)
     && isTypeWithContext context exp typ
 isTypeWithContext _ _ _ = False

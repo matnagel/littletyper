@@ -28,7 +28,7 @@ import Text.Trifecta
     symbol,
     symbolic,
   )
-import Types (Expression (Athe, CLambda, EApplication), Type (..))
+import Types (Expression (AThe, CLambda, EApplication), Type (..))
 
 lambdaEntry :: Parser ()
 lambdaEntry = void (symbolic 'λ') <|> void (symbol "lambda")
@@ -59,7 +59,7 @@ theAnnotated :: Parser Expression -> Parser Expression
 theAnnotated p = do
   exp <- p
   annotation <- optional (symbolic ':' >> pType)
-  return $ maybe exp (Athe exp) annotation
+  return $ maybe exp (AThe exp) annotation
 
 pCompositeExpression :: Parser Expression
 pCompositeExpression =
