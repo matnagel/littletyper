@@ -4,7 +4,7 @@ module Utils
 where
 
 import Data.Either (fromRight)
-import Parser.Expression (ErrInfo, parseToExpression)
+import Parser.File (ErrInfo, parseToExpression)
 import Types (Expression)
 
 convertString :: String -> Expression

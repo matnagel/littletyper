@@ -9,7 +9,7 @@ where
 import Data.Either (fromRight, isLeft, isRight)
 import Data.Map (Map, fromList)
 import qualified Data.Map.Strict as Map
-import Parser.Expression (ErrInfo, parseToExpression)
+import Parser.File (parseToExpression)
 import Test.Tasty (TestTree, testGroup)
 import Test.Tasty.HUnit (assertBool, assertEqual, testCase)
 import TypeChecking

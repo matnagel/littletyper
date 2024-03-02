@@ -1,7 +1,5 @@
 module Parser.Expression
-  ( parseToExpression,
-    parseToDefinition,
-    ErrInfo,
+  ( pDefinition,
     pExpression,
     pType,
   )
@@ -19,8 +17,7 @@ import Parser.Token
     tokenVariable,
   )
 import Text.Trifecta
-  ( ErrInfo,
-    Parser,
+  ( Parser,
     Result (Failure, Success),
     braces,
     parens,
@@ -70,11 +67,6 @@ pCompositeExpression =
 pExpression :: Parser Expression
 pExpression = pCompositeExpression
 
-parseToExpression :: String -> Either ErrInfo Expression
-parseToExpression str = case parseString (pExpression <* symbolic ';') mempty str of
-  Success x -> Right x
-  Failure err -> Left err
-
 pDefinition :: Parser (String, Type, Expression)
 pDefinition = do
   symbol "const"
@@ -84,8 +76,3 @@ pDefinition = do
   symbolic '='
   exp <- pExpression
   return (name, t, exp)
-
-parseToDefinition :: String -> Either ErrInfo (String, Type, Expression)
-parseToDefinition str = case parseString (pDefinition <* symbolic ';') mempty str of
-  Success x -> Right x
-  Failure err -> Left err

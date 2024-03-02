@@ -8,7 +8,7 @@ where
 
 import Data.Either (fromRight, isLeft, isRight)
 import qualified Data.Map.Strict as Map
-import Parser.Expression (ErrInfo, parseToDefinition, parseToExpression)
+import Parser.File (ErrInfo, parseToDefinition, parseToExpression)
 import Test.Tasty (TestTree, testGroup)
 import Test.Tasty.HUnit (assertBool, assertEqual, testCase)
 import Types (Expression (CAtom, EApplication, EVar))

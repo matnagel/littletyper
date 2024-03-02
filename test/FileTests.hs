@@ -8,8 +8,7 @@ where
 
 import Data.Either (fromRight, isLeft, isRight)
 import qualified Data.Map.Strict as Map
-import Parser.Expression (ErrInfo, parseToExpression)
-import Parser.File (parseFileContent)
+import Parser.File (parseFileContent, parseToExpression)
 import System.Directory (listDirectory)
 import System.FilePath ((</>))
 import Test.Tasty (TestTree, testGroup)
